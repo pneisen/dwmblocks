@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Get the utilization and temperature of the GPU
+out=$(nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits | awk '{printf("%2d%% %d°", $1, $2) }')
+
+case $BLOCK_BUTTON in
+  3) notify-send "🖥️ GPU module" "\- Shows utilization and temperature of the GPU."
+esac
+echo "🖥️ $out"

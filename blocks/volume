@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# This is specific to my system
+
+# Get the default sink
+sink="$(/usr/bin/pacmd list-sinks | fgrep '*' -A1 | tr -d '\n')"
+if [[ $sink =~ "Wireless" ]]; then
+  default_sink=1 # Wireless headset
+  sink_icon="🎧"
+else
+  default_sink=2 # Line out speakers
+  sink_icon="📢"
+fi
+
+case $BLOCK_BUTTON in
+  1)
+    if [[ "$default_sink" -eq "1" ]]; then
+      /usr/bin/pacmd set-default-sink alsa_output.pci-0000_0d_00.3.analog-stereo
+      sink_icon="📢"
+    else
+      /usr/bin/pacmd set-default-sink alsa_output.usb-Kingston_HyperX_Cloud_Stinger_Core_Wireless___7.1_000000000000-00.analog-stereo
+      sink_icon="🎧"
+    fi
+    ;;
+  2) /usr/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle ;;
+  3) notify-send "📢 Volume module" "\- Shows sink and volume 🔊, 🔇 if muted.
+    - Left click to change to next sink.
+    - Middle click to mute." ;;
+esac
+
+[ $(pamixer --get-mute) = true ] && echo "$sink_icon🔇" && exit
+
+vol="$(pamixer --get-volume)"
+
+if [ "$vol" -gt "70" ]; then
+  icon="🔊"
+elif [ "$vol" -lt "30" ]; then
+  icon="🔈"
+else
+  icon="🔉"
+fi
+
+echo "$sink_icon$icon $vol%"
